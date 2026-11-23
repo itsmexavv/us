@@ -1,0 +1,8 @@
+# Private: the plain-text words, photos and the key never leave this PC.
+content/
+secret.key
+TAG-URL.txt
+
+node_modules/
+*.pdf
+smoke-*.png

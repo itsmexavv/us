@@ -1,0 +1,4 @@
+# Never let line-ending conversion touch these: one changed byte breaks the encrypted payload.
+*.bin binary
+*.ttf binary
+*.png binary

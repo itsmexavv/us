@@ -1,0 +1,18 @@
+{
+  "name": "tap-card",
+  "version": "1.0.0",
+  "private": true,
+  "description": "An NFC love card: tapping it opens a private page whose key lives only on the card.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test \"test/*.test.mjs\"",
+    "check": "node scripts/check.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "serve": "node scripts/serve.mjs",
+    "label": "node scripts/label.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
+  }
+}

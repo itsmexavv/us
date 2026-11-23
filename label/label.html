@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card label</title>
+<!--
+  The sticker for the front of the NFC card (credit-card size, 85.6 x 54 mm).
+  Made into PDFs by:  npm run label
+    label.html?to=Name          one card with 2 mm bleed, for a print shop
+    label.html?to=Name&sheet    eight cards on A4 with cut lines, for sticker paper at home
+-->
+<style>
+  @font-face { font-family: "Caveat"; src: url("../docs/fonts/Caveat.ttf"); font-weight: 400 700; }
+  @font-face { font-family: "Quicksand"; src: url("../docs/fonts/Quicksand.ttf"); font-weight: 300 700; }
+  :root {
+    --blush: #f8e1e0; --petal: #f2c9cc; --rose: #d88d98; --berry: #8f4d5a; --ink: #5d4b4d;
+    --w: 85.6mm; --h: 54mm; --bleed: 2mm;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: "Quicksand", sans-serif; color: var(--ink); background: #fff; }
+
+  .card {
+    position: relative;
+    width: calc(var(--w) + 2 * var(--bleed));
+    height: calc(var(--h) + 2 * var(--bleed));
+    padding: calc(var(--bleed) + 4mm);
+    background-color: var(--blush);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 30mm 1fr;
+    align-items: center;
+    column-gap: 3mm;
+  }
+  /* Dots are real SVG circles: repeating backgrounds get rasterised (and look blocky) in PDFs. */
+  .dots { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .mark, .words { position: relative; z-index: 1; }
+  .mark { width: 30mm; height: 30mm; }
+  .mark svg { width: 100%; height: 100%; display: block; }
+  .words { text-align: left; }
+  .tap { font-family: "Caveat", cursive; font-weight: 700; font-size: 30pt; line-height: 0.95; color: var(--berry); }
+  .to { font-family: "Caveat", cursive; font-weight: 600; font-size: 15pt; line-height: 1.1; margin-top: 1.5mm; }
+  .hint { font-size: 5.6pt; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--berry); opacity: 0.8; margin-top: 3mm; line-height: 1.35; }
+
+  /* one card per page, with bleed */
+  body.single { width: calc(var(--w) + 2 * var(--bleed)); }
+  @page { size: 89.6mm 58mm; margin: 0; } /* 85.6 x 54 plus 2 mm bleed each side */
+
+  /* A4 sheet: no bleed, cut lines */
+  body.sheet { --bleed: 0mm; }
+  body.sheet .grid {
+    display: grid;
+    grid-template-columns: repeat(2, var(--w));
+    grid-auto-rows: var(--h);
+    gap: 6mm;
+    justify-content: center;
+    padding-top: 14mm;
+  }
+  body.sheet .card { outline: 0.2mm dashed #b9a9ab; outline-offset: 0; }
+  body.sheet .note { text-align: center; font-size: 8pt; color: #8a7779; margin-top: 8mm; }
+</style>
+<style media="print" id="page-size"></style>
+</head>
+<body>
+<div class="grid" id="grid"></div>
+<p class="note" id="note" hidden>Print at 100% (actual size), cut along the dashed lines, and stick one on the front of the NFC card.</p>
+<template id="card">
+  <div class="card">
+    <div class="mark">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M44 86 C14 66 4 50 4 36 C4 24 13 15 25 15 C33 15 40 19 44 26 C48 19 55 15 63 15 C75 15 84 24 84 36 C84 50 74 66 44 86 Z" fill="#d88d98"/>
+        <g fill="none" stroke="#8f4d5a" stroke-width="4" stroke-linecap="round">
+          <path d="M80 8 Q91 19 80 30" opacity="0.9"/>
+          <path d="M87 2 Q104 19 87 36" opacity="0.6"/>
+        </g>
+      </svg>
+    </div>
+    <div class="words">
+      <div class="tap">tap me</div>
+      <div class="to"></div>
+      <div class="hint">hold me near the top<br>of your phone</div>
+    </div>
+  </div>
+</template>
+<script>
+  const q = new URLSearchParams(location.search);
+  const to = q.get('to');
+  const sheet = q.has('sheet');
+  document.body.className = sheet ? 'sheet' : 'single';
+  if (sheet) {
+    document.getElementById('note').hidden = false;
+    document.getElementById('page-size').textContent = '@page { size: A4; margin: 0; }';
+  }
+  // A grid of dots, in mm, covering the card plus bleed.
+  const NS = 'http://www.w3.org/2000/svg';
+  function dots(wMm, hMm) {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'dots');
+    svg.setAttribute('viewBox', `0 0 ${wMm} ${hMm}`);
+    svg.setAttribute('preserveAspectRatio', 'none');
+    for (let y = 1.8; y < hMm; y += 3.6) {
+      for (let x = 1.8; x < wMm; x += 3.6) {
+        const c = document.createElementNS(NS, 'circle');
+        c.setAttribute('cx', x.toFixed(2));
+        c.setAttribute('cy', y.toFixed(2));
+        c.setAttribute('r', '0.36');
+        c.setAttribute('fill', '#d88d98');
+        c.setAttribute('fill-opacity', '0.35');
+        svg.append(c);
+      }
+    }
+    return svg;
+  }
+  const bleed = sheet ? 0 : 2;
+  const grid = document.getElementById('grid');
+  for (let i = 0; i < (sheet ? 8 : 1); i++) {
+    const card = document.getElementById('card').content.cloneNode(true);
+    card.querySelector('.to').textContent = to ? `for ${to} ♡` : '♡';
+    card.querySelector('.card').prepend(dots(85.6 + 2 * bleed, 54 + 2 * bleed));
+    grid.append(card);
+  }
+</script>
+</body>
+</html>
