@@ -30,6 +30,8 @@ npm run label      makes the card sticker PDFs
 
 To publish a change: `npm run build`, `npm run check`, then commit and push. GitHub Pages updates in about a minute. **The card never needs rewriting**, because the key stays the same.
 
+To run the smoke test against the live site (PowerShell): `$env:SMOKE_BASE='https://itsmexavv.github.io/us/'; npm run smoke`.
+
 To preview a special day, add `?date=YYYY-MM-DD` before the `#`, e.g. `http://localhost:8123/?date=2026-12-05#k=...`.
 
 ## Writing the words

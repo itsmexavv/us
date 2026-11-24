@@ -45,8 +45,10 @@ async function open(page, url) {
     return settle();
   }
 }
-const server = await startServer(0);
-const base = baseUrl(server);
+// SMOKE_BASE=https://itsmexavv.github.io/us/ checks the live site instead of a local server.
+const server = process.env.SMOKE_BASE ? null : await startServer(0);
+const base = process.env.SMOKE_BASE || baseUrl(server);
+console.log(`Testing ${process.env.SMOKE_BASE ? 'the live site' : 'docs/ on a local server'}\n`);
 const browser = await launchBrowser();
 try {
   console.log('No key (someone who only has the link):');
@@ -109,7 +111,7 @@ try {
   console.log(`  FAIL  ${e.message}`);
 } finally {
   await browser.close();
-  server.close();
+  server?.close();
   killStrayEdge();
 }
 
